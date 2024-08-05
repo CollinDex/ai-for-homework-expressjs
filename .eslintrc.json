@@ -24,10 +24,11 @@
      "no-duplicate-imports": "error",
      "no-unused-vars": "off",
      "no-magic-numbers": "off",
-     "@typescript-eslint/no-unused-vars": "error",
+     "@typescript-eslint/no-unused-vars": "off",
      "@typescript-eslint/explicit-function-return-type": "error",
      "@typescript-eslint/strict-boolean-expressions": "off",
      "@typescript-eslint/no-extraneous-class": "off",
-     "@typescript-eslint/no-magic-numbers": "error"
+     "@typescript-eslint/no-magic-numbers": "error",
+     "@typescript-eslint/no-unused-expressions":"warn"
     }
    }

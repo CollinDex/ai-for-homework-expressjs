@@ -2,9 +2,7 @@ import "reflect-metadata";
 import cors from "cors";
 import express, { Express, Request, Response } from "express";
 import { errorHandler, routeNotFound } from "./middleware";
-/* import {
-  authRoute,
-} from "./routes"; */
+import { textRoute, imgRoute } from "./routes";
 
 
 const app: Express = express();
@@ -32,7 +30,8 @@ app.get("/api/v1", (req: Request, res: Response) => {
   res.json({ message: "Ai for Homework Api" });
 });
 
-/* app.use("/api/v1", emailRoute); */
+app.use("/api/v1", textRoute);
+app.use("/api/v1", imgRoute);
 
 app.use(routeNotFound);
 app.use(errorHandler);
