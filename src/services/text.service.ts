@@ -1,14 +1,22 @@
 import {
   HttpError,
 } from "../middleware";
+import { openai } from "../helpers/openai";
 
 export class TextService  {
 
-  public async generateSolution(input) {
+  public async generateSolution(prompt: string) {
     try {
-        const data = input;
+        const completion = await openai.chat.completions.create({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            { role: "user", content: prompt }
+          ],
+        });
+
+        const result = completion.choices[0].message;
       return {
-        data: data,
+        data: result,
         message: "Succesful Response from TextService",
       };
     } catch (error) {

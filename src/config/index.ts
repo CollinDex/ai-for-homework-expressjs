@@ -11,6 +11,10 @@ const config = {
   DB_NAME: process.env.DB_NAME,
   BASE_URL: process.env.BASE_URL,
   NODE_ENV: process.env.NODE_ENV,
+  OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+  OPENROUTER_BASE_URL: process.env.OPENROUTER_BASE_URL,
+  SITE_URL: process.env.SITE_URL,
+  SITE_NAME: process.env.SITE_NAME,
   ADMIN_SECRET_KEY: process.env.ADMIN_SECRET_KEY,
   SUPER_SECRET_KEY: process.env.SUPER_SECRET_KEY,
 };
