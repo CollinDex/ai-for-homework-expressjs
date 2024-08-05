@@ -9,6 +9,7 @@ src/entity
 src/ormconfig.ts
 yarn.lock
 build
+dist/
 issueformat.md
 requests.rest
 package-lock.json
