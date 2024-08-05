@@ -24,7 +24,7 @@ export class TextService  {
         const result = completion.choices[0].message;
         const response = result.content;
 
-        if (result.content) {
+        if (response) {
           const solution = this.responseRepository.create({ prompt, response });
           await this.responseRepository.save(solution);
         }
