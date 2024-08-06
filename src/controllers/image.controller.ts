@@ -6,7 +6,8 @@ const imageService = new ImageService();
 
 const getImgSolution = async (req: Request, res: Response, next: NextFunction) => {
 	try {
-		const { data, message } = await imageService.generateSolution(req.body.image);
+		const { image } = req.body; 
+		const { data, message } = await imageService.generateSolution(image);
 		sendJsonResponse(res, 200, message, { data });
 	} catch (error) {
 		next(error);
