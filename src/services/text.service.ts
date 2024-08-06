@@ -3,6 +3,8 @@ import AppDataSource from "../data-source";
 import { Responses } from "../models";
 import {  HttpError } from "../middleware";
 import { Repository } from "typeorm";
+import { Persona } from "../types";
+import { generateChatHistory } from "../utils/generate-chat-history";
 
 
 export class TextService  {
@@ -14,18 +16,27 @@ export class TextService  {
 
   public async generateSolution(prompt: string) {
     try {
+        
+        const previousMessages = await this.responseRepository.find({
+          order: { created_at: 'ASC' }
+        });
+
+        const chatHistory = generateChatHistory(previousMessages);
+
         const completion = await openai.chat.completions.create({
           model: "openai/gpt-4o-mini",
           messages: [
+            {role: "system", content: Persona.AI_MENTOR},
+            ...chatHistory,
             { role: "user", content: prompt }
-          ],
+          ]
         });
 
         const result = completion.choices[0].message;
         const response = result.content;
 
         if (response) {
-          const solution = this.responseRepository.create({ prompt, response });
+          const solution = this.responseRepository.create({ prompt, response});
           await this.responseRepository.save(solution);
         }
 
