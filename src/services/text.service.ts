@@ -32,6 +32,7 @@ export class TextService  {
           ]
         });
 
+        console.log(completion);
         const result = completion.choices[0].message;
         const response = result.content;
 
