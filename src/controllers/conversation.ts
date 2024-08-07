@@ -29,4 +29,13 @@ const continueConversation = async (req: Request, res: Response, next: NextFunct
 	}
 };
 
-export { startConversation, continueConversation };
+const getAllConversations = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const conversations = await textService.getAllConversations();
+		sendJsonResponse(res, 200, 'All conversations retrieved successfully', conversations);
+	} catch (error) {
+		next(error);
+	}
+};
+
+export { startConversation, continueConversation, getAllConversations };
