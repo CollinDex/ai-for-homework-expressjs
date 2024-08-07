@@ -6,6 +6,6 @@ import { validateData } from "../middleware/validationMiddleware";
 
 const textRoute= Router();
 
-textRoute.post("/text", validateData(textPromptSchema),getTxtSolution);
+textRoute.post("/text", validateData(textPromptSchema), getTxtSolution);
 
 export { textRoute };

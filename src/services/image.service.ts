@@ -11,7 +11,7 @@ export class ImageService {
 		this.responseRepository = AppDataSource.getRepository(Responses);
 	}
 
-	public async generateSolution(image: string) {
+	public async generateSolution(image: string, prompt:string) {
 		console.log(image);
 		try {
 			const completion = await openai.chat.completions.create({
@@ -20,6 +20,10 @@ export class ImageService {
 					{
 						role: 'user',
 						content: [
+							{
+								"type": "text",
+								"text": prompt
+							  },
 							{
 								type: 'image_url',
 								image_url: {
@@ -42,7 +46,7 @@ export class ImageService {
 
 			return {
 				data: result,
-				message: 'Succesful Response from TextService'
+				message: 'Succesful Response from ImageService'
 			};
 		} catch (error) {
 			if (error instanceof HttpError) {
