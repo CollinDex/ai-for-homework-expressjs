@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import cors from 'cors';
 import express, { Express, Request, Response } from 'express';
 import { errorHandler, routeNotFound } from './middleware';
-import { textRoute, imgRoute, conversationRouter } from './routes';
+import { textRoute, imgRoute, conversationRouter, conversationTRouter } from './routes';
 
 const app: Express = express();
 app.options('*', cors());
@@ -26,6 +26,7 @@ app.get('/api/v1', (req: Request, res: Response) => {
 app.use('/api/v1', textRoute);
 app.use('/api/v1', imgRoute);
 app.use('/api/v1', conversationRouter);
+app.use('/api/v1', conversationTRouter);
 
 app.use(routeNotFound);
 app.use(errorHandler);
