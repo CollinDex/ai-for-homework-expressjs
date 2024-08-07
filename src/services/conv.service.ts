@@ -1,61 +1,67 @@
-import { openai } from '../helpers/openai';
-import AppDataSource from '../data-source';
-import { Responses } from '../models';
-import { HttpError } from '../middleware';
-import { Repository } from 'typeorm';
-import { Persona } from '../types';
-import { generateChatHistory } from '../utils/generate-chat-history';
+// import { openai } from '../helpers/openai';
+// import AppDataSource from '../data-source';
+// import { Responses } from '../models';
+// import { HttpError } from '../middleware';
+// import { Repository } from 'typeorm';
+// import { Persona } from '../types';
+// import { generateChatHistory } from '../utils/generate-chat-history';
 
-export class TextService {
-	private responseRepository: Repository<Responses>;
+// export class TextService {
+// 	private responseRepository: Repository<Responses>;
 
-	constructor() {
-		this.responseRepository = AppDataSource.getRepository(Responses);
-	}
+// 	constructor() {
+// 		this.responseRepository = AppDataSource.getRepository(Responses);
+// 	}
 
-	public async generateSolution(prompt: string, conversationId?: string) {
-		try {
-			let previousMessages = [];
+// 	public async generateSolution(prompt: string, conversationId?: string) {
+// 		try {
+// 			let previousMessages = [];
 
-			if (conversationId) {
-				// Find previous messages for the given conversation ID
-				previousMessages = await this.responseRepository.find({
-					where: { id: conversationId },
-					order: { created_at: 'ASC' }
-				});
-			}
+// 			if (conversationId) {
+// 				previousMessages = await this.responseRepository.find({
+// 					where: { id: conversationId },
+// 					order: { created_at: 'ASC' }
+// 				});
+// 			}
 
-			const chatHistory = generateChatHistory(previousMessages);
+// 			console.log(previousMessages);
 
-			const completion = await openai.chat.completions.create({
-				model: 'openai/gpt-4o-mini',
-				messages: [{ role: 'system', content: Persona.AI_MENTOR }, ...chatHistory, { role: 'user', content: prompt }]
-			});
+// 			const chatHistory = generateChatHistory(previousMessages);
 
-			const result = completion.choices[0].message;
-			const response = result.content;
+// 			const completion = await openai.chat.completions.create({
+// 				model: 'openai/gpt-4o-mini',
+// 				messages: [{ role: 'system', content: Persona.AI_MENTOR }, ...chatHistory, { role: 'user', content: prompt }]
+// 			});
 
-			if (response) {
-				const solution = this.responseRepository.create({
-					prompt,
-					response,
-					...(conversationId ? { id: conversationId } : {})
-				});
-				await this.responseRepository.save(solution);
-			}
+// 			const result = completion.choices[0].message;
+// 			const response = result.content;
 
-			return {
-				data: result,
-				message: 'Successful Response from TextService'
-			};
-		} catch (error) {
-			if (error instanceof HttpError) {
-				throw error;
-			}
-			throw new HttpError(error.status || 500, error.message || error);
-		}
-	}
-}
+// 			let solution: Responses;
+// 			if (response) {
+// 				solution = this.responseRepository.create({
+// 					prompt,
+// 					response,
+// 					...(conversationId ? { id: conversationId } : {})
+// 				});
+// 				solution = await this.responseRepository.save(solution);
+// 			}
+
+// 			console.log(solution);
+
+// 			return {
+// 				conversationId: solution ? solution.id : null,
+// 				data: result,
+// 				message: 'Successful Response from TextService'
+// 			};
+// 		} catch (error) {
+// 			console.log(error);
+// 			if (error instanceof HttpError) {
+// 				throw error;
+// 			}
+// 			throw new HttpError(error.status || 500, error.message || error);
+// 		}
+// 	}
+// }
 
 //  this is throwing error
 
@@ -129,3 +135,84 @@ export class TextService {
 // 		}
 // 	}
 // }
+
+import { openai } from '../helpers/openai';
+import AppDataSource from '../data-source';
+import { Responses, Conversations } from '../models';
+import { HttpError } from '../middleware';
+import { Repository } from 'typeorm';
+import { Persona } from '../types';
+import { generateChatHistory } from '../utils/generate-chat-history';
+
+export class TextService {
+	private responseRepository: Repository<Responses>;
+	private conversationRepository: Repository<Conversations>;
+
+	constructor() {
+		this.responseRepository = AppDataSource.getRepository(Responses);
+		this.conversationRepository = AppDataSource.getRepository(Conversations);
+	}
+
+	public async generateSolution(prompt: string, conversationId?: string) {
+		try {
+			let previousMessages = [];
+			let conversation: Conversations | undefined;
+
+			if (conversationId) {
+				conversation = await this.conversationRepository.findOne({
+					where: { id: conversationId },
+					relations: ['responses']
+				});
+
+				if (conversation) {
+					// Ensure responses is initialized as an empty array if undefined
+					previousMessages = conversation.responses || [];
+				} else {
+					throw new HttpError(404, 'Conversation not found');
+				}
+			} else {
+				conversation = this.conversationRepository.create({ topic: prompt });
+				await this.conversationRepository.save(conversation);
+			}
+
+			const chatHistory = generateChatHistory(previousMessages);
+
+			const completion = await openai.chat.completions.create({
+				model: 'openai/gpt-4o-mini',
+				messages: [{ role: 'system', content: Persona.AI_MENTOR }, ...chatHistory, { role: 'user', content: prompt }]
+			});
+
+			const result = completion.choices[0].message;
+			const response = result.content;
+
+			if (response) {
+				const responseEntity = this.responseRepository.create({
+					prompt,
+					response,
+					conversation: conversation // Associate with conversation
+				});
+				await this.responseRepository.save(responseEntity);
+
+				// Initialize responses array if not already present
+				if (!conversation.responses) {
+					conversation.responses = [];
+				}
+
+				// Add response to conversation
+				conversation.responses.push(responseEntity);
+				await this.conversationRepository.save(conversation);
+			}
+
+			return {
+				data: result,
+				message: 'Successful Response from TextService',
+				conversationId: conversation?.id // Return the conversation ID
+			};
+		} catch (error) {
+			if (error instanceof HttpError) {
+				throw error;
+			}
+			throw new HttpError(error.status || 500, error.message || error);
+		}
+	}
+}

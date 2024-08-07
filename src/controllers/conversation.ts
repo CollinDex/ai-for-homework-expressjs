@@ -1,30 +1,32 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { TextService } from '../services/conv.service';
+import { sendJsonResponse } from '../helpers';
 
-const router = Router();
 const textService = new TextService();
 
-router.post('/start-conversation', async (req: Request, res: Response, next: NextFunction) => {
+const startConversation = async (req: Request, res: Response, next: NextFunction) => {
 	const { prompt } = req.body;
 
 	try {
-		const result = await textService.generateSolution(prompt);
-		res.status(200).json(result);
+		const { data, message, conversationId } = await textService.generateSolution(prompt);
+		const updatedData = { ...data, id: conversationId };
+		sendJsonResponse(res, 200, message, updatedData);
 	} catch (error) {
 		next(error);
 	}
-});
+};
 
-router.post('/continue-conversation/:id', async (req: Request, res: Response, next: NextFunction) => {
-	const { id } = req.params;
+const continueConversation = async (req: Request, res: Response, next: NextFunction) => {
+	const id = req.query.id as string;
 	const { prompt } = req.body;
 
 	try {
-		const result = await textService.generateSolution(prompt, id);
-		res.status(200).json(result);
+		const { data, message, conversationId } = await textService.generateSolution(prompt, id);
+		const updatedData = { ...data, id: conversationId };
+		sendJsonResponse(res, 200, message, updatedData);
 	} catch (error) {
 		next(error);
 	}
-});
+};
 
-export default router;
+export { startConversation, continueConversation };
