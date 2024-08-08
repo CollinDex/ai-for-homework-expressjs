@@ -30,4 +30,23 @@ const sendJsonResponse = (
   res.status(statusCode).json(responsePayload);
 };
 
-export { sendJsonResponse };
+const sendJsonResponse2 = (
+  res: Response,
+  statusCode: number,
+  message,
+  accessToken?: string,
+) => {
+  const responsePayload: any = {
+    status: statusCode,
+    message,
+    status_code: statusCode,
+  };
+
+  if (accessToken) {
+    responsePayload.access_token = accessToken;
+  }
+
+  res.status(statusCode).json(responsePayload);
+};
+
+export { sendJsonResponse, sendJsonResponse2 };
