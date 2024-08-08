@@ -35,17 +35,16 @@ export class ImageService {
 				]
 			});
 
-			const result = completion.choices[0].message;
-
-			const response = result.content;
+			const image_result = completion.choices[0].message;
+			const response = image_result.content;
 
 			if (response) {
-				const solution = this.responseRepository.create({ image, response });
-				await this.responseRepository.save(solution);
+				const image_solution = this.responseRepository.create({ image, response });
+				await this.responseRepository.save(image_solution);
 			}
 
 			return {
-				data: result,
+				data: image_result,
 				message: 'Succesful Response from ImageService'
 			};
 		} catch (error) {
