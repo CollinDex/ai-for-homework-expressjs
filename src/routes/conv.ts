@@ -10,15 +10,3 @@ conversationRouter.post('/start-conversation', validateData(textPromptSchema), g
 conversationRouter.post('/continue-conversation?:id', validateData(textPromptSchema), getTxtSolution);
 conversationRouter.get('/all-conversations', getTxtSolution); 
 export { conversationRouter };
-
-
-
-
-
-
-
-const textRoute= Router();
-
-textRoute.post("/text", validateData(textPromptSchema), getTxtSolution);
-
-export { textRoute };
